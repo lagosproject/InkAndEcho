@@ -1,0 +1,22 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Circle 1: Oldest dot -->
+    <path
+        android:fillColor="@color/dot_oldest"
+        android:pathData="M 24.1,54 a 6.8,6.8 0 1,0 13.6,0 a 6.8,6.8 0 1,0 -13.6,0" />
+    <!-- Circle 2: Recent dot -->
+    <path
+        android:fillColor="@color/dot_recent"
+        android:pathData="M 42.9,54 a 6.8,6.8 0 1,0 13.6,0 a 6.8,6.8 0 1,0 -13.6,0" />
+    <!-- Circle 3: Echo dot -->
+    <path
+        android:fillColor="@color/dot_echo"
+        android:pathData="M 61.8,54 a 6.8,6.8 0 1,0 13.6,0 a 6.8,6.8 0 1,0 -13.6,0" />
+    <!-- Active Cursor -->
+    <path
+        android:fillColor="@color/cursor_active"
+        android:pathData="M 82.2,45.4 a 1.7,1.7 0 0,1 1.7,1.7 v 13.7 a 1.7,1.7 0 0,1 -1.7,1.7 a 1.7,1.7 0 0,1 -1.7,-1.7 v -13.7 a 1.7,1.7 0 0,1 1.7,-1.7 z" />
+</vector>

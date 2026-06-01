@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ink &amp; Echo</string>
+    <string name="setup_title">Préparer l\'Encre</string>
+    <string name="setup_subtitle">Configurez les règles du jeu avant d\'écrire.</string>
+    <string name="num_scribblers">NOMBRE D\'ÉCRIVAINS</string>
+    <string name="hint_length">LONGUEUR DE L\'INDICE</string>
+    <string name="hint_length_caption">Mots visibles pour le prochain écrivain.</string>
+    <string name="story_prompt">ACCROCHE DE L\'HISTOIRE</string>
+    <string name="hint_strict">Strict (1)</string>
+    <string name="hint_standard">Standard (3)</string>
+    <string name="hint_loose">Libre (5)</string>
+    <string name="prompt_placeholder">C\'était une nuit sombre et orageuse...</string>
+    <string name="btn_start_writing">COMMENCER À ÉCRIRE</string>
+    
+    <string name="guide_title">Comment Jouer</string>
+    <string name="guide_subtitle">LES RÈGLES DE LA PAGE</string>
+    <string name="step1_title">Écrivez votre partie</string>
+    <string name="step1_desc">Saisissez un paragraphe de l\'histoire. Ne vous souciez pas de la perfection ; concentrez-vous sur le ton et la transition pour le prochain auteur.</string>
+    <string name="step2_title">Passez le téléphone</string>
+    <string name="step2_desc">Donnez l\'appareil au joueur suivant. Il ne verra que la toute dernière ligne de ce que vous venez d\'écrire — l\'écho.</string>
+    <string name="step3_title">Révélez l\'écho</string>
+    <string name="step3_desc">Une fois que tout le monde a contribué, dépliez le papier numérique pour lire le manuscrit complet et imprévisible que vous avez tissé ensemble.</string>
+    <string name="btn_start_session">COMMENCER UNE SESSION</string>
+    
+    <string name="turn_indicator">TOUR %1$d SUR %2$d</string>
+    <string name="the_echo">L\'ÉCHO</string>
+    <string name="your_thread">Votre fil</string>
+    <string name="thread_placeholder">Continuez le fil ici. Laissez couler l\'encre...</string>
+    <string name="btn_seal_scroll">SCELLER LE PARCHEMIN</string>
+    <string name="btn_seal_end">SCELLER &amp; TERMINER</string>
+    
+    <string name="archive_title">Échos Passés</string>
+    <string name="archive_subtitle">Une bibliothèque de récits achevés, reliés par l\'encre et la mémoire.</string>
+    <string name="genre_all">TOUS</string>
+    <string name="genre_mystery">MYSTÈRE</string>
+    <string name="genre_fantasy">FANTAISIE</string>
+    <string name="genre_scifi">SCI-FI</string>
+    <string name="genre_drama">DRAME</string>
+    <string name="no_stories">Aucune histoire trouvée dans ce genre.</string>
+    
+    <string name="library_back">Bibliothèque</string>
+    <string name="authors_label">AUTEURS</string>
+    <string name="authors_count">%1$d Auteurs</string>
+    
+    <string name="dialog_pass_title">PASSEZ LE TÉLÉPHONE</string>
+    <string name="dialog_pass_text">Passez cet appareil à %1$s. Assurez-vous qu\'il ne regarde pas les lignes précédentes de l\'histoire !</string>
+    <string name="dialog_pass_btn">JE SUIS PRÊT</string>
+    <string name="default_writer_name">Écrivain %1$d</string>
+    <string name="writer_names_title">NOMS DES ÉCRIVAINS</string>
+    <string name="writer_names_subtitle">Ajoutez les noms de chaque écrivain</string>
+    <string name="writer_name_placeholder">Écrivain %1$d</string>
+
+    <string name="tab_setup">Ajustements</string>
+    <string name="tab_guide">Guide</string>
+    <string name="tab_write">Écrire</string>
+    <string name="tab_archive">Archives</string>
+    <string name="tab_play">Jouer</string>
+
+    <string name="btn_suggest_prompt">PROPOSER ACCROCHE</string>
+    <string name="dialog_prompts_title">SÉLECTIONNER UNE ACCROCHE</string>
+    <string name="btn_surprise_me">SURPRENDS-MOI</string>
+
+    <string-array name="story_starters_mystery">
+        <item>L\'horloge de grand-père sonna treize heures, et la porte verrouillée du bureau s\'entrouvrit lentement.</item>
+        <item>Une seule empreinte de pas humide se trouvait au centre du sol sec du salon, ne menant nulle part.</item>
+        <item>La lettre n\'avait pas d\'adresse de retour, seulement trois mots : \'Ils l\'ont trouvé.\'</item>
+        <item>Le professeur Vance était mort, mais la partie d\'échecs dans son bureau venait d\'avancer d\'un coup.</item>
+        <item>La lanterne du phare s\'éteignit, non pas à cause d\'une ampoule grillée, mais parce que quelqu\'un l\'avait peinte en noir.</item>
+        <item>Chaque miroir du manoir avait été recouvert d\'un voile noir, sauf celui du grenier.</item>
+        <item>Elle ouvrit son casier pour y trouver une clé qu\'elle n\'avait jamais vue auparavant, étiquetée à son propre nom.</item>
+        <item>Un chien aboya contre le mur vide pendant des heures jusqu\'à ce que le plâtre commence à se fissurer.</item>
+        <item>Il acheta le bureau antique aux enchères, pour y trouver un compartiment secret contenant un journal daté de demain.</item>
+        <item>Les passagers du train se réveillèrent pour trouver le wagon-restaurant complètement vide, mais la table était dressée pour douze personnes.</item>
+    </string-array>
+
+    <string-array name="story_starters_fantasy">
+        <item>L\'épée dans la pierre ne se détacha pas ; au lieu de cela, elle commença à chuchoter dans une langue oubliée depuis longtemps.</item>
+        <item>Chaque fois qu\'il pleuvait, les flaques d\'eau de la place du village reflétaient un ciel différent.</item>
+        <item>Elle était née avec une ombre qui ne correspondait pas à ses mouvements, mais suivait plutôt un inconnu silencieux.</item>
+        <item>La vieille carte ne montrait ni routes ni rivières, mais marquait l\'endroit où les dragons dormaient autrefois.</item>
+        <item>Une fleur bleue lumineuse fleurit sur la table de la cuisine pendant la nuit, se nourrissant des secrets de la famille.</item>
+        <item>Il échangea sa dernière pièce de cuivre contre une bouteille de lumière d\'étoiles, espérant qu\'elle le guiderait à travers les Bois Chuchotants.</item>
+        <item>Les arbres de la forêt commencèrent à migrer vers le sud, laissant derrière eux des ruines antiques qui n\'étaient pas là hier.</item>
+        <item>Elle portait un collier de minuscules perles de verre, chacune contenant le souvenir d\'une tempête.</item>
+        <item>La couronne du roi devenait plus lourde à chaque mensonge qu\'il prononçait, jusqu\'à commencer à lui broyer le front.</item>
+        <item>Dans la cité des tisseurs de nuages, le vent refusa soudain de transporter leurs fils.</item>
+    </string-array>
+
+    <string-array name="story_starters_scifi">
+        <item>Le signal de détresse voyageait dans l\'espace depuis mille ans, utilisant une voix humaine.</item>
+        <item>Son nouvel œil artificiel fonctionnait parfaitement, sauf qu\'il affichait parfois un compte à rebours dans le coin.</item>
+        <item>La colonie de terraformation se réveilla pour trouver que le sable rouge et stérile s\'était transformé en herbe bleue pendant la nuit.</item>
+        <item>L\'IA de son vaisseau commença à écrire de la poésie sur une planète qui n\'existait sur aucune carte.</item>
+        <item>Un énorme cylindre de chrome descendit du ciel, planant silencieusement au-dessus de l\'océan sans faire la moindre ride.</item>
+        <item>Le chronomètre tourna à l\'envers pendant trois secondes, et tout le monde sur la station ressentit un frisson soudain.</item>
+        <item>Ils construisirent la réalité virtuelle parfaite, mais quelqu\'un oublia de coder un bouton de sortie.</item>
+        <item>La capsule récupérée du trou noir contenait une seule pomme parfaitement fraîche.</item>
+        <item>En l\'an 2142, le sommeil n\'était plus naturel ; il devait être téléchargé sous forme de mise à jour logicielle.</item>
+        <item>Il découvrit que son reflet dans le miroir intelligent avait un retard de cinq minutes exactes.</item>
+    </string-array>
+
+    <string-array name="story_starters_drama">
+        <item>Après vingt ans de silence, le téléphone sur la table de chevet sonna, et la voix de son père retentit.</item>
+        <item>Il rangea sa vie dans une seule valise, laissant les clés sur le comptoir de la cuisine à côté de la bague.</item>
+        <item>La boulangerie de la petite ville était célèbre pour son pain, mais l\'ingrédient secret était une promesse centenaire.</item>
+        <item>Elle s\'asseyait sur le banc du parc tous les mardis, attendant l\'homme qui ne reviendrait jamais.</item>
+        <item>Une boîte de vieilles lettres trouvée dans le grenier révéla que leur maison familiale ne leur avait jamais appartenu.</item>
+        <item>Il regarda le tableau sur lequel il avait travaillé pendant dix ans et réalisa qu\'il était temps de le peindre à nouveau.</item>
+        <item>La lettre d\'acceptation arriva le jour même où ils reçurent l\'avis d\'expulsion.</item>
+        <item>Elle trouva son journal d\'enfance dans le bac à soldes de la librairie, avec des pages ajoutées de l\'écriture de quelqu\'un d\'autre.</item>
+        <item>Ils se tenaient sous l\'auvent alors que la pluie d\'été tombait, tous deux trop fiers pour prononcer les premières excuses.</item>
+        <item>Le rideau de scène se leva, mais l\'acteur principal resta complètement immobile, fixant le premier rang vide.</item>
+    </string-array>
+</resources>

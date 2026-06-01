@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 440" width="100%" height="100%">
+  <defs>
+    <!-- Drop shadow for the app icon container -->
+    <filter id="appShadow" x="-20%" y="-20%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#041627" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <!-- App Icon Background with Shadow -->
+  <rect x="28" y="20" width="384" height="384" rx="84.5" fill="#FBFAEE" filter="url(#appShadow)" />
+
+  <!-- Logo Elements -->
+  <g transform="translate(28, 20)">
+    <!-- 1. Distant past -->
+    <circle cx="84" cy="192" r="32" fill="#C4C6CD" />
+    
+    <!-- 2. Recent past -->
+    <circle cx="172" cy="192" r="32" fill="#74777D" />
+    
+    <!-- 3. The echo (present) -->
+    <circle cx="260" cy="192" r="32" fill="#041627" />
+    
+    <!-- 4. Cursor active -->
+    <rect x="316" y="152" width="16" height="80" rx="8" fill="#AB3500" />
+  </g>
+</svg>

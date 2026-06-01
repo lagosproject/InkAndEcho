@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_launcher_background">#FBFAEE</color>
+    <color name="dot_oldest">#C4C6CD</color>
+    <color name="dot_recent">#74777D</color>
+    <color name="dot_echo">#041627</color>
+    <color name="cursor_active">#AB3500</color>
+</resources>

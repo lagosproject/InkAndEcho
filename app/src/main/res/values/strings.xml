@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ink &amp; Echo</string>
+    <string name="setup_title">Prepare the Ink</string>
+    <string name="setup_subtitle">Configure the rules of engagement before you type.</string>
+    <string name="num_scribblers">NUMBER OF SCRIBBLERS</string>
+    <string name="hint_length">HINT LENGTH</string>
+    <string name="hint_length_caption">Words visible to the next writer.</string>
+    <string name="story_prompt">STORY PROMPT</string>
+    <string name="hint_strict">Strict (1)</string>
+    <string name="hint_standard">Standard (3)</string>
+    <string name="hint_loose">Loose (5)</string>
+    <string name="prompt_placeholder">It was a dark and stormy night...</string>
+    <string name="btn_start_writing">START WRITING</string>
+    
+    <string name="guide_title">How to Play</string>
+    <string name="guide_subtitle">THE MECHANICS OF THE PAGE</string>
+    <string name="step1_title">Write your part</string>
+    <string name="step1_desc">Type a paragraph of the story. Don\'t worry about perfection; focus on establishing the tone and setting up the next author.</string>
+    <string name="step2_title">Pass the phone</string>
+    <string name="step2_desc">Hand the device to the next player. They will only see the very last line of what you just wrote—the \'echo\'.</string>
+    <string name="step3_title">Reveal the echo</string>
+    <string name="step3_desc">Once everyone has contributed, unfold the digital paper to read the complete, unpredictable manuscript you\'ve woven together.</string>
+    <string name="btn_start_session">START A SESSION</string>
+    
+    <string name="turn_indicator">TURN %1$d OF %2$d</string>
+    <string name="the_echo">THE ECHO</string>
+    <string name="your_thread">Your Thread</string>
+    <string name="thread_placeholder">Continue the thread here. Let the ink flow...</string>
+    <string name="btn_seal_scroll">SEAL THE SCROLL</string>
+    <string name="btn_seal_end">SEAL THE SCROLL &amp; END</string>
+    
+    <string name="archive_title">Past Echoes</string>
+    <string name="archive_subtitle">A library of finished tales, bound by ink and memory.</string>
+    <string name="genre_all">ALL</string>
+    <string name="genre_mystery">MYSTERY</string>
+    <string name="genre_fantasy">FANTASY</string>
+    <string name="genre_scifi">SCI-FI</string>
+    <string name="genre_drama">DRAMA</string>
+    <string name="no_stories">No stories found in this genre.</string>
+    
+    <string name="library_back">Library</string>
+    <string name="authors_label">AUTHORS</string>
+    <string name="authors_count">%1$d Authors</string>
+    
+    <string name="dialog_pass_title">PASS THE PHONE</string>
+    <string name="dialog_pass_text">Hand this device over to %1$s. Make sure they do not look at the prior story lines!</string>
+    <string name="dialog_pass_btn">I AM READY</string>
+    <string name="default_writer_name">Scribbler %1$d</string>
+    <string name="writer_names_title">WRITER NAMES</string>
+    <string name="writer_names_subtitle">Add names for each writer</string>
+    <string name="writer_name_placeholder">Writer %1$d</string>
+
+    <string name="tab_setup">Setup</string>
+    <string name="tab_guide">Guide</string>
+    <string name="tab_write">Write</string>
+    <string name="tab_archive">Archive</string>
+    <string name="tab_play">Play</string>
+
+    <string name="btn_suggest_prompt">SUGGEST PROMPT</string>
+    <string name="dialog_prompts_title">SELECT A STARTER</string>
+    <string name="btn_surprise_me">SURPRISE ME</string>
+
+    <string-array name="story_starters_mystery">
+        <item>The grandfather clock struck thirteen, and the locked study door slowly creaked open.</item>
+        <item>A single wet footprint lay in the center of the dry parlor floor, leading nowhere.</item>
+        <item>The letter had no return address, only three words: \'They found it.\'</item>
+        <item>Professor Vance was dead, but the chess game in his office had just progressed by one move.</item>
+        <item>The lighthouse lamp went out, not from a broken bulb, but because someone had painted it black.</item>
+        <item>Every mirror in the mansion had been covered with a black veil, save for the one in the attic.</item>
+        <item>She opened her locker to find a key she had never seen before, tagged with her own name.</item>
+        <item>A dog barked at the empty wall for hours until the plaster began to crack.</item>
+        <item>He bought the antique desk at an auction, only to find a secret compartment holding a diary dated tomorrow.</item>
+        <item>The train passengers woke up to find the dining car completely empty, but the table was set for twelve.</item>
+    </string-array>
+
+    <string-array name="story_starters_fantasy">
+        <item>The sword in the stone didn\'t pull loose; instead, it began to whisper in a language long forgotten.</item>
+        <item>Every time it rained, the puddles in the village square showed a reflection of a different sky.</item>
+        <item>She was born with a shadow that didn\'t match her movements, but rather followed a silent stranger.</item>
+        <item>The old map didn\'t show roads or rivers, but instead marked where the dragons used to sleep.</item>
+        <item>A glowing blue flower bloomed on the kitchen table overnight, feeding on the family\'s secrets.</item>
+        <item>He traded his last copper coin for a bottle of starlight, hoping it would guide him through the Whispering Woods.</item>
+        <item>The forest trees began to migrate south, leaving behind ancient ruins that weren\'t there yesterday.</item>
+        <item>She wore a necklace of tiny glass beads, each holding the memory of a storm.</item>
+        <item>The king\'s crown grew heavier with every lie he spoke, until it began to crush his brow.</item>
+        <item>In the city of cloud-weavers, the wind suddenly refused to carry their threads.</item>
+    </string-array>
+
+    <string-array name="story_starters_scifi">
+        <item>The distress signal had been traveling through space for a thousand years, using a human voice.</item>
+        <item>His new artificial eye worked perfectly, except it occasionally displayed a countdown timer in the corner.</item>
+        <item>The terraforming colony woke up to find that the barren red sand had turned into blue grass overnight.</item>
+        <item>Her ship\'s AI began to draft poetry about a planet that did not exist on any map.</item>
+        <item>A massive chrome cylinder descended from the sky, hovering silently over the ocean without making a ripple.</item>
+        <item>The chronometer ticked backwards for three seconds, and everyone on the station felt a sudden chill.</item>
+        <item>They built the perfect virtual reality, but someone forgot to code an exit button.</item>
+        <item>The capsule retrieved from the black hole contained a single, perfectly fresh apple.</item>
+        <item>In the year 2142, sleep was no longer natural; it had to be downloaded as a software patch.</item>
+        <item>He discovered that his reflection in the smart-mirror was lagging behind by exactly five minutes.</item>
+    </string-array>
+
+    <string-array name="story_starters_drama">
+        <item>After twenty years of silence, the phone on the bedside table rang, and her father\'s voice spoke.</item>
+        <item>He packed his life into a single suitcase, leaving the keys on the kitchen counter next to the ring.</item>
+        <item>The small-town bakery was famous for its bread, but the secret ingredient was a century-old promise.</item>
+        <item>She sat on the park bench every Tuesday, waiting for the man who would never return.</item>
+        <item>A box of old letters found in the attic revealed that their family home was never actually theirs.</item>
+        <item>He looked at the painting he had worked on for ten years and realized it was time to paint over it.</item>
+        <item>The letter of acceptance arrived the same day they received the eviction notice.</item>
+        <item>She found her childhood diary in the bookstore\'s discount bin, with pages added in someone else\'s handwriting.</item>
+        <item>They stood under the awning as the summer rain poured, both too proud to say the first apology.</item>
+        <item>The stage curtain rose, but the lead actor stood completely still, staring at the empty front row.</item>
+    </string-array>
+</resources>
