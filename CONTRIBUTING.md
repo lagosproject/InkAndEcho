@@ -14,7 +14,7 @@ Thank you for choosing to contribute to **Ink & Echo**! We appreciate your help 
    ```
 3. **Set up the upstream remote**:
    ```bash
-   git remote add upstream https://github.com/LakesCorp/InkAndEcho.git
+   git remote add upstream https://github.com/lagosproject/InkAndEcho.git
    ```
 
 ---

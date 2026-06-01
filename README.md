@@ -5,8 +5,8 @@
 <h1 align="center">Ink & Echo 📝🎭</h1>
 
 <p align="center">
-  <a href="https://github.com/LakesCorp/InkAndEcho/actions">
-    <img src="https://github.com/LakesCorp/InkAndEcho/workflows/CI/badge.svg" alt="Build Status">
+  <a href="https://github.com/lagosproject/InkAndEcho/actions">
+    <img src="https://github.com/lagosproject/InkAndEcho/workflows/CI/badge.svg" alt="Build Status">
   </a>
   <a href="https://opensource.org/licenses/MIT">
     <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
@@ -63,7 +63,7 @@ To build and run this project, you will need:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/LakesCorp/InkAndEcho.git
+   git clone https://github.com/lagosproject/InkAndEcho.git
    cd InkAndEcho
    ```
 
