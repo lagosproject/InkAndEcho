@@ -67,15 +67,35 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.ui.graphics.SolidColor
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.flow.*
+import java.io.IOException
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.ImageShader
+import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.graphics.TileMode
 
 enum class Screen {
     SETUP, GUIDE, WRITE, ARCHIVE
 }
 
-class TypewriterSoundManager(private val context: Context) {
+private val whitespaceRegex = "\\s+".toRegex()
+
+class MediaPlaybackManager(private val context: Context) : DefaultLifecycleObserver {
     private var soundPool: SoundPool? = null
     private var keySoundId: Int = 0
     private var returnSoundId: Int = 0
+
+    private var tts: TextToSpeech? = null
+    private var isTtsInitialized = false
+    private var onSpeechStateChanged: ((Boolean) -> Unit)? = null
 
     init {
         val audioAttributes = AudioAttributes.Builder()
@@ -104,13 +124,65 @@ class TypewriterSoundManager(private val context: Context) {
         }
     }
 
-    fun release() {
+    fun initTts(onSpeechStateChanged: (Boolean) -> Unit, onInitCompleted: () -> Unit) {
+        this.onSpeechStateChanged = onSpeechStateChanged
+        if (tts == null) {
+            val handler = Handler(Looper.getMainLooper())
+            tts = TextToSpeech(context) { status ->
+                if (status == TextToSpeech.SUCCESS) {
+                    isTtsInitialized = true
+                    tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                        override fun onStart(utteranceId: String?) {
+                            handler.post { onSpeechStateChanged(true) }
+                        }
+                        override fun onDone(utteranceId: String?) {
+                            handler.post { onSpeechStateChanged(false) }
+                        }
+                        @Deprecated("Deprecated in Java")
+                        override fun onError(utteranceId: String?) {
+                            handler.post { onSpeechStateChanged(false) }
+                        }
+                        override fun onError(utteranceId: String?, errorCode: Int) {
+                            handler.post { onSpeechStateChanged(false) }
+                        }
+                    })
+                    handler.post { onInitCompleted() }
+                }
+            }
+        } else if (isTtsInitialized) {
+            onInitCompleted()
+        }
+    }
+
+    fun speak(text: String) {
+        if (isTtsInitialized) {
+            val params = Bundle().apply {
+                putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "story_tts")
+            }
+            tts?.language = Locale.getDefault()
+            tts?.speak(text, TextToSpeech.QUEUE_FLUSH, params, "story_tts")
+            onSpeechStateChanged?.invoke(true)
+        }
+    }
+
+    fun stopSpeaking() {
+        tts?.stop()
+        onSpeechStateChanged?.invoke(false)
+    }
+
+    override fun onDestroy(owner: LifecycleOwner) {
+        super.onDestroy(owner)
         soundPool?.release()
         soundPool = null
+        tts?.stop()
+        tts?.shutdown()
+        tts = null
+        isTtsInitialized = false
+        onSpeechStateChanged = null
     }
 }
 
-fun playSoundForTextChange(oldText: String, newText: String, soundManager: TypewriterSoundManager) {
+fun playSoundForTextChange(oldText: String, newText: String, soundManager: MediaPlaybackManager) {
     if (newText.length > oldText.length) {
         val addedText = getAddedText(oldText, newText)
         if (addedText.contains("\n")) {
@@ -145,103 +217,119 @@ data class CompletedStory(
     val authorList: List<String>
 )
 
-fun saveCompletedStories(context: Context, stories: List<CompletedStory>) {
-    val prefs = context.getSharedPreferences("ink_and_echo_prefs", Context.MODE_PRIVATE)
-    val jsonArray = JSONArray()
-    for (story in stories) {
-        val json = JSONObject().apply {
-            put("id", story.id)
-            put("title", story.title)
-            put("date", story.date)
-            put("fullText", story.fullText)
-            put("authorsCount", story.authorsCount)
-            put("genre", story.genre)
-            val authors = JSONArray()
-            story.authorList.forEach { authors.put(it) }
-            put("authorList", authors)
-        }
-        jsonArray.put(json)
-    }
-    prefs.edit().putString("completed_stories", jsonArray.toString()).apply()
-}
+val Context.dataStore by preferencesDataStore(name = "ink_and_echo_prefs")
 
-fun loadCompletedStories(context: Context): List<CompletedStory> {
-    val prefs = context.getSharedPreferences("ink_and_echo_prefs", Context.MODE_PRIVATE)
-    val storiesStr = prefs.getString("completed_stories", null) ?: return emptyList()
-    val stories = mutableListOf<CompletedStory>()
-    try {
-        val jsonArray = JSONArray(storiesStr)
-        for (i in 0 until jsonArray.length()) {
-            val json = jsonArray.getJSONObject(i)
-            val authors = mutableListOf<String>()
-            val authorsArray = json.getJSONArray("authorList")
-            for (j in 0 until authorsArray.length()) {
-                authors.add(authorsArray.getString(j))
+class StoryRepository(private val context: Context) {
+    private val storiesKey = stringPreferencesKey("completed_stories")
+
+    val completedStoriesFlow: Flow<List<CompletedStory>> = context.dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(androidx.datastore.preferences.core.emptyPreferences())
+            } else {
+                throw exception
             }
-            stories.add(
-                CompletedStory(
-                    id = json.getString("id"),
-                    title = json.getString("title"),
-                    date = json.getString("date"),
-                    fullText = json.getString("fullText"),
-                    authorsCount = json.getInt("authorsCount"),
-                    genre = json.getString("genre"),
-                    authorList = authors
-                )
-            )
         }
-    } catch (e: Exception) {
-        e.printStackTrace()
+        .map { preferences ->
+            val storiesStr = preferences[storiesKey] ?: return@map emptyList()
+            parseStoriesJson(storiesStr)
+        }
+
+    suspend fun saveCompletedStories(stories: List<CompletedStory>) {
+        val jsonArray = JSONArray()
+        for (story in stories) {
+            val json = JSONObject().apply {
+                put("id", story.id)
+                put("title", story.title)
+                put("date", story.date)
+                put("fullText", story.fullText)
+                put("authorsCount", story.authorsCount)
+                put("genre", story.genre)
+                val authors = JSONArray()
+                story.authorList.forEach { authors.put(it) }
+                put("authorList", authors)
+            }
+            jsonArray.put(json)
+        }
+        context.dataStore.edit { preferences ->
+            preferences[storiesKey] = jsonArray.toString()
+        }
     }
-    return stories
+
+    private fun parseStoriesJson(storiesStr: String): List<CompletedStory> {
+        val stories = mutableListOf<CompletedStory>()
+        try {
+            val jsonArray = JSONArray(storiesStr)
+            for (i in 0 until jsonArray.length()) {
+                val json = jsonArray.getJSONObject(i)
+                val authors = mutableListOf<String>()
+                val authorsArray = json.getJSONArray("authorList")
+                for (j in 0 until authorsArray.length()) {
+                    authors.add(authorsArray.getString(j))
+                }
+                stories.add(
+                    CompletedStory(
+                        id = json.getString("id"),
+                        title = json.getString("title"),
+                        date = json.getString("date"),
+                        fullText = json.getString("fullText"),
+                        authorsCount = json.getInt("authorsCount"),
+                        genre = json.getString("genre"),
+                        authorList = authors
+                    )
+                )
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("StoryRepository", "Error parsing stories JSON", e)
+        }
+        return stories
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
+    private lateinit var mediaPlaybackManager: MediaPlaybackManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        mediaPlaybackManager = MediaPlaybackManager(this)
+        lifecycle.addObserver(mediaPlaybackManager)
         setContent {
             InkAndEchoTheme {
-                MainAppContainer()
+                MainAppContainer(mediaPlaybackManager)
             }
         }
     }
 }
 
 // Draw the tactile dotted paper grid
-fun Modifier.paperGrid(gridColor: Color): Modifier = this.drawBehind {
+fun Modifier.paperGrid(gridColor: Color): Modifier = this.drawWithCache {
     val dotRadius = 0.5.dp.toPx()
-    val step = 8.dp.toPx()
-    val width = size.width
-    val height = size.height
+    val stepPx = 8.dp.toPx()
+    val stepInt = stepPx.toInt().coerceAtLeast(1)
 
-    var x = 0f
-    while (x < width) {
-        var y = 0f
-        while (y < height) {
-            drawCircle(
-                color = gridColor,
-                radius = dotRadius,
-                center = Offset(x, y)
-            )
-            y += step
-        }
-        x += step
+    val tileBitmap = ImageBitmap(stepInt, stepInt)
+    val canvas = Canvas(tileBitmap)
+    val paint = Paint().apply {
+        color = gridColor
+        isAntiAlias = true
+    }
+    canvas.drawCircle(Offset(0f, 0f), dotRadius, paint)
+
+    val shader = ImageShader(tileBitmap, TileMode.Repeated, TileMode.Repeated)
+    val brush = ShaderBrush(shader)
+
+    onDrawBehind {
+        drawRect(brush)
     }
 }
 
 @Composable
-fun MainAppContainer() {
+fun MainAppContainer(soundManager: MediaPlaybackManager) {
     val defaultPrompt = stringResource(id = R.string.prompt_placeholder)
     val appTitle = stringResource(id = R.string.app_name)
 
     val context = LocalContext.current
-    val soundManager = remember { TypewriterSoundManager(context) }
-    DisposableEffect(soundManager) {
-        onDispose {
-            soundManager.release()
-        }
-    }
 
     // Navigation & Screen State
     var currentScreen by remember { mutableStateOf(Screen.GUIDE) }
@@ -260,12 +348,21 @@ fun MainAppContainer() {
     var lastWordsEcho by remember { mutableStateOf("") }
     
     // Archive State
-    var completedStories by remember {
-        mutableStateOf(loadCompletedStories(context))
+    val storyRepository = remember { StoryRepository(context) }
+    var isLoaded by remember { mutableStateOf(false) }
+    var completedStories by remember { mutableStateOf<List<CompletedStory>>(emptyList()) }
+
+    LaunchedEffect(Unit) {
+        storyRepository.completedStoriesFlow.collect { stories ->
+            completedStories = stories
+            isLoaded = true
+        }
     }
 
     LaunchedEffect(completedStories) {
-        saveCompletedStories(context, completedStories)
+        if (isLoaded) {
+            storyRepository.saveCompletedStories(completedStories)
+        }
     }
 
     // Modal / Reader State
@@ -334,7 +431,7 @@ fun MainAppContainer() {
                                 lastWordsEcho = ""
                             } else {
                                 storySegments = listOf(storyPrompt)
-                                val words = storyPrompt.trim().split("\\s+".toRegex())
+                                val words = storyPrompt.trim().split(whitespaceRegex)
                                 lastWordsEcho = "..." + words.takeLast(hintLength).joinToString(" ")
                             }
                             
@@ -364,7 +461,8 @@ fun MainAppContainer() {
                                     val fullStoryText = updatedSegments.joinToString("\n\n")
                                     // Compile unique list of contributors for metadata, matching order of setup
                                     val authorList = writerNames.mapIndexed { index, name ->
-                                        name.ifBlank { context.getString(R.string.default_writer_name, index + 1) }
+                                        val cleanName = name.replace(Regex("[\\r\\n\\t]"), "").trim().take(50)
+                                        cleanName.ifBlank { context.getString(R.string.default_writer_name, index + 1) }
                                     }
                                     val dateStr = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date())
                                     
@@ -385,7 +483,7 @@ fun MainAppContainer() {
                                     currentScreen = Screen.ARCHIVE
                                 } else {
                                     // Prepare next turn
-                                    val words = text.trim().split("\\s+".toRegex())
+                                    val words = text.trim().split(whitespaceRegex)
                                     lastWordsEcho = "..." + words.takeLast(hintLength).joinToString(" ")
                                     currentTurn += 1
                                     
@@ -429,6 +527,7 @@ fun MainAppContainer() {
                 selectedReaderStory?.let { story ->
                     StoryReaderOverlay(
                         story = story,
+                        soundManager = soundManager,
                         onClose = { selectedReaderStory = null },
                         onDelete = {
                             completedStories = completedStories.filter { it.id != story.id }
@@ -591,7 +690,7 @@ fun GameSetupScreen(
     onStoryPromptChanged: (String) -> Unit,
     writerNames: List<String>,
     onWriterNamesChanged: (List<String>) -> Unit,
-    soundManager: TypewriterSoundManager,
+    soundManager: MediaPlaybackManager,
     onStartGame: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
@@ -1160,7 +1259,7 @@ fun WritingDeskScreen(
     writerName: String,
     echoText: String,
     hintLength: Int,
-    soundManager: TypewriterSoundManager,
+    soundManager: MediaPlaybackManager,
     onSealScroll: (String) -> Unit
 ) {
     var threadTextValue by remember(currentTurn) { mutableStateOf(TextFieldValue("")) }
@@ -1168,7 +1267,9 @@ fun WritingDeskScreen(
     var lastCursorLine by remember(currentTurn) { mutableStateOf(0) }
     val focusManager = LocalFocusManager.current
 
-    val words = threadTextValue.text.trim().split("\\s+".toRegex()).filter { it.isNotBlank() }
+    val words = remember(threadTextValue.text) {
+        threadTextValue.text.trim().split(whitespaceRegex).filter { it.isNotBlank() }
+    }
     val minWords = (hintLength + 1) / 2
     val isReady = words.size >= minWords
 
@@ -1577,11 +1678,11 @@ fun StoryGridItem(
 @Composable
 fun StoryReaderOverlay(
     story: CompletedStory,
+    soundManager: MediaPlaybackManager,
     onClose: () -> Unit,
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
-    var tts by remember { mutableStateOf<TextToSpeech?>(null) }
     var isTtsInitialized by remember { mutableStateOf(false) }
     var isSpeaking by remember { mutableStateOf(false) }
     var showDeleteConfirmInReader by remember { mutableStateOf(false) }
@@ -1635,33 +1736,20 @@ fun StoryReaderOverlay(
         )
     }
 
-    DisposableEffect(Unit) {
-        val handler = Handler(Looper.getMainLooper())
-        var ttsInstance: TextToSpeech? = null
-        ttsInstance = TextToSpeech(context) { status ->
-            if (status == TextToSpeech.SUCCESS) {
+    LaunchedEffect(Unit) {
+        soundManager.initTts(
+            onSpeechStateChanged = { speaking ->
+                isSpeaking = speaking
+            },
+            onInitCompleted = {
                 isTtsInitialized = true
-                ttsInstance?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-                    override fun onStart(utteranceId: String?) {
-                        handler.post { isSpeaking = true }
-                    }
-                    override fun onDone(utteranceId: String?) {
-                        handler.post { isSpeaking = false }
-                    }
-                    @Deprecated("Deprecated in Java")
-                    override fun onError(utteranceId: String?) {
-                        handler.post { isSpeaking = false }
-                    }
-                    override fun onError(utteranceId: String?, errorCode: Int) {
-                        handler.post { isSpeaking = false }
-                    }
-                })
             }
-        }
-        tts = ttsInstance
+        )
+    }
+
+    DisposableEffect(Unit) {
         onDispose {
-            ttsInstance.stop()
-            ttsInstance.shutdown()
+            soundManager.stopSpeaking()
         }
     }
 
@@ -1708,18 +1796,10 @@ fun StoryReaderOverlay(
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (isTtsInitialized) {
                         IconButton(onClick = {
-                            tts?.let { ttsInstance ->
-                                if (isSpeaking) {
-                                    ttsInstance.stop()
-                                    isSpeaking = false
-                                } else {
-                                    ttsInstance.language = Locale.getDefault()
-                                    val params = Bundle().apply {
-                                        putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "story_tts")
-                                    }
-                                    ttsInstance.speak(story.fullText, TextToSpeech.QUEUE_FLUSH, params, "story_tts")
-                                    isSpeaking = true
-                                }
+                            if (isSpeaking) {
+                                soundManager.stopSpeaking()
+                            } else {
+                                soundManager.speak(story.fullText)
                             }
                         }) {
                             Icon(
@@ -1731,13 +1811,18 @@ fun StoryReaderOverlay(
                     }
 
                     IconButton(onClick = {
+                        val sanitizedTitle = story.title.take(100).replace(Regex("[^\\w\\s\\-#]"), "")
                         val sendIntent = Intent().apply {
                             action = Intent.ACTION_SEND
-                            putExtra(Intent.EXTRA_TEXT, "${story.title}\n\n${story.fullText}")
+                            putExtra(Intent.EXTRA_TEXT, "$sanitizedTitle\n\n${story.fullText}")
                             type = "text/plain"
                         }
                         val shareIntent = Intent.createChooser(sendIntent, null)
-                        context.startActivity(shareIntent)
+                        try {
+                            context.startActivity(shareIntent)
+                        } catch (e: Exception) {
+                            android.util.Log.e("StoryReaderOverlay", "Failed to start share activity", e)
+                        }
                     }) {
                         Icon(Icons.Default.Share, contentDescription = "Share", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }

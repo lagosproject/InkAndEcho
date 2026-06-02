@@ -90,6 +90,9 @@ dependencies {
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.7.6")
 
+    // DataStore Preferences for asynchronous local storage
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
     // Tooling
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
