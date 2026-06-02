@@ -26,6 +26,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.LakesCorp.FunCoStory.ui.components.MechanicalButton
+import com.LakesCorp.FunCoStory.ui.components.PaperContainer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -279,7 +279,7 @@ fun StoryReaderOverlay(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        story.authorList.forEachIndexed { idx, author ->
+                        story.authorList.forEach { author ->
                             Box(
                                 modifier = Modifier
                                     .padding(horizontal = 4.dp)
