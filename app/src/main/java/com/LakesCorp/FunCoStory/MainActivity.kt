@@ -81,6 +81,10 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.ImageShader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.TileMode
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.collectAsState
+import com.LakesCorp.FunCoStory.ui.GameViewModel
+import com.LakesCorp.FunCoStory.ui.GameViewModelFactory
 
 enum class Screen {
     SETUP, GUIDE, WRITE, ARCHIVE
@@ -330,56 +334,22 @@ fun MainAppContainer(soundManager: MediaPlaybackManager) {
     val appTitle = stringResource(id = R.string.app_name)
 
     val context = LocalContext.current
+    val storyRepository = remember { StoryRepository(context.applicationContext) }
+    val viewModel: GameViewModel = viewModel(
+        factory = GameViewModelFactory(storyRepository)
+    )
 
-    // Navigation & Screen State
-    var currentScreen by remember { mutableStateOf(Screen.GUIDE) }
-    
-    // Game Config State
-    var scribblersCount by remember { mutableStateOf(4) }
-    var roundsCount by remember { mutableStateOf(1) }
-    var hintLength by remember { mutableStateOf(3) }
-    var storyPrompt by remember { mutableStateOf("") }
-    var writerNames by remember { mutableStateOf(List(4) { "" }) }
-    
-    // Ongoing Game State
-    var gameInProgress by remember { mutableStateOf(false) }
-    var currentTurn by remember { mutableStateOf(1) }
-    var storySegments by remember { mutableStateOf<List<String>>(emptyList()) }
-    var lastWordsEcho by remember { mutableStateOf("") }
-    
-    // Archive State
-    val storyRepository = remember { StoryRepository(context) }
-    var isLoaded by remember { mutableStateOf(false) }
-    var completedStories by remember { mutableStateOf<List<CompletedStory>>(emptyList()) }
-
-    LaunchedEffect(Unit) {
-        storyRepository.completedStoriesFlow.collect { stories ->
-            completedStories = stories
-            isLoaded = true
-        }
-    }
-
-    LaunchedEffect(completedStories) {
-        if (isLoaded) {
-            storyRepository.saveCompletedStories(completedStories)
-        }
-    }
-
-    // Modal / Reader State
-    var selectedReaderStory by remember { mutableStateOf<CompletedStory?>(null) }
-    var showPassPhoneDialog by remember { mutableStateOf(false) }
+    val completedStories by viewModel.completedStories.collectAsState()
 
     Scaffold(
         bottomBar = {
             InkBottomNavigationBar(
-                currentScreen = currentScreen,
+                currentScreen = viewModel.currentScreen,
                 onScreenSelected = { screen ->
-                    // Prevent leaving a live game unless desired
-                    if (screen == Screen.WRITE && !gameInProgress) {
-                        // Not writing anything yet, go to setup first
-                        currentScreen = Screen.SETUP
+                    if (screen == Screen.WRITE && !viewModel.gameInProgress) {
+                        viewModel.navigateTo(Screen.SETUP)
                     } else {
-                        currentScreen = screen
+                        viewModel.navigateTo(screen)
                     }
                 }
             )
@@ -392,105 +362,48 @@ fun MainAppContainer(soundManager: MediaPlaybackManager) {
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            when (currentScreen) {
+            when (viewModel.currentScreen) {
                 Screen.GUIDE -> {
                     TutorialScreen(
                         onStartSession = {
-                            currentScreen = Screen.SETUP
+                            viewModel.navigateTo(Screen.SETUP)
                         }
                     )
                 }
                 Screen.SETUP -> {
                     GameSetupScreen(
-                        scribblersCount = scribblersCount,
-                        onScribblersChanged = { count ->
-                            scribblersCount = count
-                            writerNames = if (writerNames.size < count) {
-                                writerNames + List(count - writerNames.size) { "" }
-                            } else {
-                                writerNames.take(count)
-                            }
-                        },
-                        roundsCount = roundsCount,
-                        onRoundsChanged = { count -> roundsCount = count },
-                        hintLength = hintLength,
-                        onHintLengthChanged = { length -> hintLength = length },
-                        storyPrompt = storyPrompt,
-                        onStoryPromptChanged = { prompt ->
-                            storyPrompt = prompt
-                        },
-                        writerNames = writerNames,
-                        onWriterNamesChanged = { writerNames = it },
+                        scribblersCount = viewModel.scribblersCount,
+                        onScribblersChanged = { viewModel.updateScribblersCount(it) },
+                        roundsCount = viewModel.roundsCount,
+                        onRoundsChanged = { viewModel.updateRoundsCount(it) },
+                        hintLength = viewModel.hintLength,
+                        onHintLengthChanged = { viewModel.updateHintLength(it) },
+                        storyPrompt = viewModel.storyPrompt,
+                        onStoryPromptChanged = { viewModel.updateStoryPrompt(it) },
+                        writerNames = viewModel.writerNames,
+                        onWriterNamesChanged = { viewModel.updateWriterNames(it) },
                         soundManager = soundManager,
-                        onStartGame = {
-                            // Initialize new game state
-                            currentTurn = 1
-                            gameInProgress = true
-                            if (storyPrompt.isBlank()) {
-                                storySegments = emptyList()
-                                lastWordsEcho = ""
-                            } else {
-                                storySegments = listOf(storyPrompt)
-                                val words = storyPrompt.trim().split(whitespaceRegex)
-                                lastWordsEcho = "..." + words.takeLast(hintLength).joinToString(" ")
-                            }
-                            
-                            currentScreen = Screen.WRITE
-                        }
+                        onStartGame = { viewModel.startGame() }
                     )
                 }
                 Screen.WRITE -> {
-                    val totalTurns = scribblersCount * roundsCount
-                    val currentWriterIdx = (currentTurn - 1) % scribblersCount
-                    val currentWriterName = writerNames.getOrNull(currentWriterIdx)?.ifBlank { null }
+                    val totalTurns = viewModel.scribblersCount * viewModel.roundsCount
+                    val currentWriterIdx = (viewModel.currentTurn - 1) % viewModel.scribblersCount
+                    val currentWriterName = viewModel.writerNames.getOrNull(currentWriterIdx)?.ifBlank { null }
                         ?: context.getString(R.string.default_writer_name, currentWriterIdx + 1)
                     WritingDeskScreen(
-                        currentTurn = currentTurn,
+                        currentTurn = viewModel.currentTurn,
                         totalTurns = totalTurns,
                         writerName = currentWriterName,
-                        echoText = lastWordsEcho,
-                        hintLength = hintLength,
+                        echoText = viewModel.lastWordsEcho,
+                        hintLength = viewModel.hintLength,
                         soundManager = soundManager,
                         onSealScroll = { text ->
-                            if (text.isNotBlank()) {
-                                val updatedSegments = storySegments + text
-                                storySegments = updatedSegments
-                                
-                                if (currentTurn >= totalTurns) {
-                                    // Compile finished story
-                                    val fullStoryText = updatedSegments.joinToString("\n\n")
-                                    // Compile unique list of contributors for metadata, matching order of setup
-                                    val authorList = writerNames.mapIndexed { index, name ->
-                                        val cleanName = name.replace(Regex("[\\r\\n\\t]"), "").trim().take(50)
-                                        cleanName.ifBlank { context.getString(R.string.default_writer_name, index + 1) }
-                                    }
-                                    val dateStr = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date())
-                                    
-                                    val newStory = CompletedStory(
-                                        title = "$appTitle #${completedStories.size + 1}",
-                                        date = dateStr,
-                                        fullText = fullStoryText,
-                                        authorsCount = scribblersCount,
-                                        genre = listOf("Mystery", "Fantasy", "Sci-Fi", "Drama").random(),
-                                        authorList = authorList
-                                    )
-                                    completedStories = listOf(newStory) + completedStories
-                                    
-                                    // Reset game states
-                                    storySegments = emptyList()
-                                    storyPrompt = ""
-                                    gameInProgress = false
-                                    currentScreen = Screen.ARCHIVE
-                                } else {
-                                    // Prepare next turn
-                                    val words = text.trim().split(whitespaceRegex)
-                                    lastWordsEcho = "..." + words.takeLast(hintLength).joinToString(" ")
-                                    currentTurn += 1
-                                    
-                                    // Show "Pass the Phone" alert before next scribe types
-                                    showPassPhoneDialog = true
-                                }
-                            }
+                            viewModel.sealScroll(
+                                text = text,
+                                defaultWriterName = { index -> context.getString(R.string.default_writer_name, index + 1) },
+                                appTitle = appTitle
+                            )
                         }
                     )
                 }
@@ -498,40 +411,40 @@ fun MainAppContainer(soundManager: MediaPlaybackManager) {
                     StoryArchiveScreen(
                         stories = completedStories,
                         onStoryClick = { story ->
-                            selectedReaderStory = story
+                            viewModel.selectedReaderStory = story
                         },
                         onDeleteStory = { story ->
-                            completedStories = completedStories.filter { it.id != story.id }
+                            viewModel.deleteStory(story)
                         }
                     )
                 }
             }
 
             // Overlay dialog for passing the phone
-            if (showPassPhoneDialog) {
-                val nextWriterIdx = (currentTurn - 1) % scribblersCount
-                val nextWriterName = writerNames.getOrNull(nextWriterIdx)?.ifBlank { null }
+            if (viewModel.showPassPhoneDialog) {
+                val nextWriterIdx = (viewModel.currentTurn - 1) % viewModel.scribblersCount
+                val nextWriterName = viewModel.writerNames.getOrNull(nextWriterIdx)?.ifBlank { null }
                     ?: context.getString(R.string.default_writer_name, nextWriterIdx + 1)
                 PassPhoneDialog(
                     nextWriterName = nextWriterName,
-                    onDismiss = { showPassPhoneDialog = false }
+                    onDismiss = { viewModel.showPassPhoneDialog = false }
                 )
             }
 
             // Fullscreen story reader overlay
             AnimatedVisibility(
-                visible = selectedReaderStory != null,
+                visible = viewModel.selectedReaderStory != null,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
-                selectedReaderStory?.let { story ->
+                viewModel.selectedReaderStory?.let { story ->
                     StoryReaderOverlay(
                         story = story,
                         soundManager = soundManager,
-                        onClose = { selectedReaderStory = null },
+                        onClose = { viewModel.selectedReaderStory = null },
                         onDelete = {
-                            completedStories = completedStories.filter { it.id != story.id }
-                            selectedReaderStory = null
+                            viewModel.deleteStory(story)
+                            viewModel.selectedReaderStory = null
                         }
                     )
                 }
