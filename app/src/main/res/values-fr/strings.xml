@@ -4,6 +4,8 @@
     <string name="setup_title">Préparer l\'Encre</string>
     <string name="setup_subtitle">Configurez les règles du jeu avant d\'écrire.</string>
     <string name="num_scribblers">NOMBRE D\'ÉCRIVAINS</string>
+    <string name="num_rounds">NOMBRE DE TOURS</string>
+    <string name="num_rounds_caption">Combien de fois chaque écrivain va écrire.</string>
     <string name="hint_length">LONGUEUR DE L\'INDICE</string>
     <string name="hint_length_caption">Mots visibles pour le prochain écrivain.</string>
     <string name="story_prompt">ACCROCHE DE L\'HISTOIRE</string>
@@ -12,6 +14,11 @@
     <string name="hint_loose">Libre (5)</string>
     <string name="prompt_placeholder">C\'était une nuit sombre et orageuse...</string>
     <string name="btn_start_writing">COMMENCER À ÉCRIRE</string>
+    
+    <string name="dialog_delete_title">SUPPRIMER L\'HISTOIRE</string>
+    <string name="dialog_delete_text">Êtes-vous sûr de vouloir supprimer définitivement cette histoire ?</string>
+    <string name="dialog_delete_confirm">SUPPRIMER</string>
+    <string name="dialog_delete_cancel">ANNULER</string>
     
     <string name="guide_title">Comment Jouer</string>
     <string name="guide_subtitle">LES RÈGLES DE LA PAGE</string>
@@ -27,6 +34,7 @@
     <string name="the_echo">L\'ÉCHO</string>
     <string name="your_thread">Votre fil</string>
     <string name="thread_placeholder">Continuez le fil ici. Laissez couler l\'encre...</string>
+    <string name="min_words_warning">Écrivez au moins %1$d mots (minimum pour l\'indice)</string>
     <string name="btn_seal_scroll">SCELLER LE PARCHEMIN</string>
     <string name="btn_seal_end">SCELLER &amp; TERMINER</string>
     

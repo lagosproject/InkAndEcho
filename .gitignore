@@ -19,3 +19,10 @@ keystore.properties
 app/build/*
 upload_certificate.pem
 .vscode/
+__pycache__/
+
+# Screenshots automation outputs
+screenshots_automation/screenshots/
+screenshots_automation/screenshots_tablet/
+screenshots_automation/google_play/
+screenshots_automation/google_play_tablet/

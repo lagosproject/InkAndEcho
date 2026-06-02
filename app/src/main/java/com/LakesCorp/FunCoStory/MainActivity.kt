@@ -248,6 +248,7 @@ fun MainAppContainer() {
     
     // Game Config State
     var scribblersCount by remember { mutableStateOf(4) }
+    var roundsCount by remember { mutableStateOf(1) }
     var hintLength by remember { mutableStateOf(3) }
     var storyPrompt by remember { mutableStateOf("") }
     var writerNames by remember { mutableStateOf(List(4) { "" }) }
@@ -313,6 +314,8 @@ fun MainAppContainer() {
                                 writerNames.take(count)
                             }
                         },
+                        roundsCount = roundsCount,
+                        onRoundsChanged = { count -> roundsCount = count },
                         hintLength = hintLength,
                         onHintLengthChanged = { length -> hintLength = length },
                         storyPrompt = storyPrompt,
@@ -340,22 +343,26 @@ fun MainAppContainer() {
                     )
                 }
                 Screen.WRITE -> {
-                    val currentWriterName = writerNames.getOrNull(currentTurn - 1)?.ifBlank { null }
-                        ?: context.getString(R.string.default_writer_name, currentTurn)
+                    val totalTurns = scribblersCount * roundsCount
+                    val currentWriterIdx = (currentTurn - 1) % scribblersCount
+                    val currentWriterName = writerNames.getOrNull(currentWriterIdx)?.ifBlank { null }
+                        ?: context.getString(R.string.default_writer_name, currentWriterIdx + 1)
                     WritingDeskScreen(
                         currentTurn = currentTurn,
-                        totalTurns = scribblersCount,
+                        totalTurns = totalTurns,
                         writerName = currentWriterName,
                         echoText = lastWordsEcho,
+                        hintLength = hintLength,
                         soundManager = soundManager,
                         onSealScroll = { text ->
                             if (text.isNotBlank()) {
                                 val updatedSegments = storySegments + text
                                 storySegments = updatedSegments
                                 
-                                if (currentTurn >= scribblersCount) {
+                                if (currentTurn >= totalTurns) {
                                     // Compile finished story
                                     val fullStoryText = updatedSegments.joinToString("\n\n")
+                                    // Compile unique list of contributors for metadata, matching order of setup
                                     val authorList = writerNames.mapIndexed { index, name ->
                                         name.ifBlank { context.getString(R.string.default_writer_name, index + 1) }
                                     }
@@ -394,6 +401,9 @@ fun MainAppContainer() {
                         stories = completedStories,
                         onStoryClick = { story ->
                             selectedReaderStory = story
+                        },
+                        onDeleteStory = { story ->
+                            completedStories = completedStories.filter { it.id != story.id }
                         }
                     )
                 }
@@ -401,8 +411,9 @@ fun MainAppContainer() {
 
             // Overlay dialog for passing the phone
             if (showPassPhoneDialog) {
-                val nextWriterName = writerNames.getOrNull(currentTurn - 1)?.ifBlank { null }
-                    ?: context.getString(R.string.default_writer_name, currentTurn)
+                val nextWriterIdx = (currentTurn - 1) % scribblersCount
+                val nextWriterName = writerNames.getOrNull(nextWriterIdx)?.ifBlank { null }
+                    ?: context.getString(R.string.default_writer_name, nextWriterIdx + 1)
                 PassPhoneDialog(
                     nextWriterName = nextWriterName,
                     onDismiss = { showPassPhoneDialog = false }
@@ -418,7 +429,11 @@ fun MainAppContainer() {
                 selectedReaderStory?.let { story ->
                     StoryReaderOverlay(
                         story = story,
-                        onClose = { selectedReaderStory = null }
+                        onClose = { selectedReaderStory = null },
+                        onDelete = {
+                            completedStories = completedStories.filter { it.id != story.id }
+                            selectedReaderStory = null
+                        }
                     )
                 }
             }
@@ -431,6 +446,7 @@ fun MainAppContainer() {
 fun MechanicalButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     backgroundColor: Color = MaterialTheme.colorScheme.primary,
     contentColor: Color = MaterialTheme.colorScheme.onPrimary,
     shadowColor: Color = MaterialTheme.colorScheme.primaryContainer,
@@ -441,13 +457,19 @@ fun MechanicalButton(
     val shadowHeight = 3.dp
     
     val offsetVal by animateDpAsState(
-        targetValue = if (isPressed) shadowHeight else 0.dp,
+        targetValue = if (isPressed && enabled) shadowHeight else 0.dp,
         label = "pressOffset"
     )
+
+    val finalBgColor = if (enabled) backgroundColor else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
+    val finalContentColor = if (enabled) contentColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+    val finalShadowColor = if (enabled) shadowColor else Color.Transparent
+    val finalBorderColor = if (enabled) shadowColor.copy(alpha = 0.2f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
 
     Box(
         modifier = modifier
             .clickable(
+                enabled = enabled,
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = onClick
@@ -458,7 +480,7 @@ fun MechanicalButton(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
-                .background(shadowColor, shape = RoundedCornerShape(4.dp))
+                .background(finalShadowColor, shape = RoundedCornerShape(4.dp))
         )
         // Foreground clickable button layer
         Box(
@@ -467,11 +489,11 @@ fun MechanicalButton(
                 .fillMaxWidth()
                 .height(56.dp)
                 .offset(y = offsetVal)
-                .background(backgroundColor, shape = RoundedCornerShape(4.dp))
-                .border(1.dp, shadowColor.copy(alpha = 0.2f), RoundedCornerShape(4.dp))
+                .background(finalBgColor, shape = RoundedCornerShape(4.dp))
+                .border(1.dp, finalBorderColor, RoundedCornerShape(4.dp))
                 .padding(horizontal = 16.dp)
         ) {
-            CompositionLocalProvider(LocalContentColor provides contentColor) {
+            CompositionLocalProvider(LocalContentColor provides finalContentColor) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
@@ -561,6 +583,8 @@ fun InkBottomNavigationBar(
 fun GameSetupScreen(
     scribblersCount: Int,
     onScribblersChanged: (Int) -> Unit,
+    roundsCount: Int,
+    onRoundsChanged: (Int) -> Unit,
     hintLength: Int,
     onHintLengthChanged: (Int) -> Unit,
     storyPrompt: String,
@@ -760,6 +784,75 @@ fun GameSetupScreen(
                             )
                         }
                     }
+                }
+            }
+        }
+
+        // Card 1.5: Number of Rounds
+        PaperContainer {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(id = R.string.num_rounds),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.outline
+                )
+            }
+            Text(
+                text = stringResource(id = R.string.num_rounds_caption),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        shape = RoundedCornerShape(4.dp)
+                    )
+                    .border(
+                        1.dp,
+                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
+                        RoundedCornerShape(4.dp)
+                    )
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = { if (roundsCount > 1) onRoundsChanged(roundsCount - 1) },
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(4.dp))
+                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(4.dp))
+                ) {
+                    Icon(Icons.Default.Remove, contentDescription = "Decrease", tint = MaterialTheme.colorScheme.primary)
+                }
+
+                Text(
+                    text = roundsCount.toString(),
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                IconButton(
+                    onClick = { if (roundsCount < 5) onRoundsChanged(roundsCount + 1) },
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(4.dp))
+                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(4.dp))
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Increase", tint = MaterialTheme.colorScheme.primary)
                 }
             }
         }
@@ -1066,6 +1159,7 @@ fun WritingDeskScreen(
     totalTurns: Int,
     writerName: String,
     echoText: String,
+    hintLength: Int,
     soundManager: TypewriterSoundManager,
     onSealScroll: (String) -> Unit
 ) {
@@ -1073,6 +1167,10 @@ fun WritingDeskScreen(
     var lastText by remember(currentTurn) { mutableStateOf("") }
     var lastCursorLine by remember(currentTurn) { mutableStateOf(0) }
     val focusManager = LocalFocusManager.current
+
+    val words = threadTextValue.text.trim().split("\\s+".toRegex()).filter { it.isNotBlank() }
+    val minWords = (hintLength + 1) / 2
+    val isReady = words.size >= minWords
 
     Column(
         modifier = Modifier
@@ -1213,6 +1311,29 @@ fun WritingDeskScreen(
                     }
                 )
             }
+
+            // Word count & validation warning layout
+
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "${words.size} ${if (words.size == 1) "word" else "words"}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (words.size < minWords && threadTextValue.text.isNotBlank()) {
+                    Text(
+                        text = stringResource(id = R.string.min_words_warning, minWords),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.weight(1f))
@@ -1220,12 +1341,13 @@ fun WritingDeskScreen(
         // Seal the scroll button
         MechanicalButton(
             onClick = {
-                if (threadTextValue.text.isNotBlank()) {
+                if (isReady) {
                     focusManager.clearFocus()
                     onSealScroll(threadTextValue.text)
                     threadTextValue = TextFieldValue("")
                 }
             },
+            enabled = isReady,
             backgroundColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary,
             shadowColor = MaterialTheme.colorScheme.primaryContainer
@@ -1250,8 +1372,60 @@ fun WritingDeskScreen(
 @Composable
 fun StoryArchiveScreen(
     stories: List<CompletedStory>,
-    onStoryClick: (CompletedStory) -> Unit
+    onStoryClick: (CompletedStory) -> Unit,
+    onDeleteStory: (CompletedStory) -> Unit
 ) {
+    var storyToDelete by remember { mutableStateOf<CompletedStory?>(null) }
+
+    if (storyToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { storyToDelete = null },
+            title = {
+                Text(
+                    text = stringResource(id = R.string.dialog_delete_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(id = R.string.dialog_delete_text),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        storyToDelete?.let { onDeleteStory(it) }
+                        storyToDelete = null
+                    }
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.dialog_delete_confirm),
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { storyToDelete = null }
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.dialog_delete_cancel),
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(8.dp))
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -1295,7 +1469,11 @@ fun StoryArchiveScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(stories) { story ->
-                    StoryGridItem(story = story, onClick = { onStoryClick(story) })
+                    StoryGridItem(
+                        story = story,
+                        onClick = { onStoryClick(story) },
+                        onDelete = { storyToDelete = story }
+                    )
                 }
             }
         }
@@ -1306,7 +1484,8 @@ fun StoryArchiveScreen(
 @Composable
 fun StoryGridItem(
     story: CompletedStory,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onDelete: () -> Unit
 ) {
     PaperContainer(
         modifier = Modifier
@@ -1315,7 +1494,7 @@ fun StoryGridItem(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End,
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -1323,6 +1502,17 @@ fun StoryGridItem(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            IconButton(
+                onClick = onDelete,
+                modifier = Modifier.size(24.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete story",
+                    tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
+                    modifier = Modifier.size(18.dp)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -1387,12 +1577,63 @@ fun StoryGridItem(
 @Composable
 fun StoryReaderOverlay(
     story: CompletedStory,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    onDelete: () -> Unit
 ) {
     val context = LocalContext.current
     var tts by remember { mutableStateOf<TextToSpeech?>(null) }
     var isTtsInitialized by remember { mutableStateOf(false) }
     var isSpeaking by remember { mutableStateOf(false) }
+    var showDeleteConfirmInReader by remember { mutableStateOf(false) }
+
+    if (showDeleteConfirmInReader) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmInReader = false },
+            title = {
+                Text(
+                    text = stringResource(id = R.string.dialog_delete_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(id = R.string.dialog_delete_text),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteConfirmInReader = false
+                        onDelete()
+                    }
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.dialog_delete_confirm),
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showDeleteConfirmInReader = false }
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.dialog_delete_cancel),
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(8.dp))
+        )
+    }
 
     DisposableEffect(Unit) {
         val handler = Handler(Looper.getMainLooper())
@@ -1499,6 +1740,14 @@ fun StoryReaderOverlay(
                         context.startActivity(shareIntent)
                     }) {
                         Icon(Icons.Default.Share, contentDescription = "Share", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+
+                    IconButton(onClick = { showDeleteConfirmInReader = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete story",
+                            tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f)
+                        )
                     }
                 }
             }

@@ -4,6 +4,8 @@
     <string name="setup_title">Preparar la Tinta</string>
     <string name="setup_subtitle">Configura las reglas de juego antes de escribir.</string>
     <string name="num_scribblers">NÚMERO DE ESCRITORES</string>
+    <string name="num_rounds">NÚMERO DE RONDAS</string>
+    <string name="num_rounds_caption">Cuántas veces escribirá cada escritor.</string>
     <string name="hint_length">LONGITUD DE PISTA</string>
     <string name="hint_length_caption">Palabras visibles para el siguiente escritor.</string>
     <string name="story_prompt">TEMA DE LA HISTORIA</string>
@@ -12,6 +14,11 @@
     <string name="hint_loose">Libre (5)</string>
     <string name="prompt_placeholder">Era una noche oscura y tormentosa...</string>
     <string name="btn_start_writing">COMENZAR A ESCRIBIR</string>
+    
+    <string name="dialog_delete_title">ELIMINAR HISTORIA</string>
+    <string name="dialog_delete_text">¿Estás seguro de que deseas eliminar permanentemente esta historia?</string>
+    <string name="dialog_delete_confirm">ELIMINAR</string>
+    <string name="dialog_delete_cancel">CANCELAR</string>
     
     <string name="guide_title">Cómo jugar</string>
     <string name="guide_subtitle">LAS REGLAS DEL PAPEL</string>
@@ -27,6 +34,7 @@
     <string name="the_echo">EL ECO</string>
     <string name="your_thread">Tu fragmento</string>
     <string name="thread_placeholder">Continúa la historia aquí. Deja que la tinta fluya...</string>
+    <string name="min_words_warning">Escribe al menos %1$d palabras (mínimo para la pista)</string>
     <string name="btn_seal_scroll">SELLAR EL PERGAMINO</string>
     <string name="btn_seal_end">SELLAR Y TERMINAR</string>
     

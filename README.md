@@ -27,6 +27,7 @@ Ink & Echo is a skeuomorphic, cooperative storytelling game for Android. Players
 ## 📋 Table of Contents
 - [About the Project](#-about-the-project)
 - [Features](#-features)
+- [Automated Screenshot Pipeline](docs/screenshots_pipeline.md)
 - [Prerequisites](#-prerequisites)
 - [Getting Started & Installation](#-getting-started--installation)
 - [Usage & Rules](#-usage--rules)

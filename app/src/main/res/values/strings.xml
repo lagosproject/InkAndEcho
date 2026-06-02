@@ -4,6 +4,8 @@
     <string name="setup_title">Prepare the Ink</string>
     <string name="setup_subtitle">Configure the rules of engagement before you type.</string>
     <string name="num_scribblers">NUMBER OF SCRIBBLERS</string>
+    <string name="num_rounds">NUMBER OF ROUNDS</string>
+    <string name="num_rounds_caption">How many times each scribbler will write.</string>
     <string name="hint_length">HINT LENGTH</string>
     <string name="hint_length_caption">Words visible to the next writer.</string>
     <string name="story_prompt">STORY PROMPT</string>
@@ -12,6 +14,11 @@
     <string name="hint_loose">Loose (5)</string>
     <string name="prompt_placeholder">It was a dark and stormy night...</string>
     <string name="btn_start_writing">START WRITING</string>
+    
+    <string name="dialog_delete_title">DELETE STORY</string>
+    <string name="dialog_delete_text">Are you sure you want to permanently delete this story?</string>
+    <string name="dialog_delete_confirm">DELETE</string>
+    <string name="dialog_delete_cancel">CANCEL</string>
     
     <string name="guide_title">How to Play</string>
     <string name="guide_subtitle">THE MECHANICS OF THE PAGE</string>
@@ -27,6 +34,7 @@
     <string name="the_echo">THE ECHO</string>
     <string name="your_thread">Your Thread</string>
     <string name="thread_placeholder">Continue the thread here. Let the ink flow...</string>
+    <string name="min_words_warning">Write at least %1$d words (minimum for hint)</string>
     <string name="btn_seal_scroll">SEAL THE SCROLL</string>
     <string name="btn_seal_end">SEAL THE SCROLL &amp; END</string>
     
