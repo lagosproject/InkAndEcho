@@ -6,9 +6,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.LakesCorp.FunCoStory.CompletedStory
+import com.LakesCorp.FunCoStory.data.CompletedStory
 import com.LakesCorp.FunCoStory.Screen
-import com.LakesCorp.FunCoStory.StoryRepository
+import com.LakesCorp.FunCoStory.data.StoryRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
