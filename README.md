@@ -19,8 +19,14 @@
   </a>
 </p>
 
+<p align="center">
+  <a href="https://play.google.com/store/apps/details?id=com.LakesCorp.FunCoStory">
+    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" height="55">
+  </a>
+</p>
 
-Ink & Echo is a skeuomorphic, cooperative storytelling game for Android. Players pass the phone around, writing consecutive parts of a story while only seeing a small "echo" (the last few words) of what the previous writer contributed.
+
+Ink & Echo is a skeuomorphic, cooperative storytelling game for Android. It is now live on the [Google Play Store](https://play.google.com/store/apps/details?id=com.LakesCorp.FunCoStory)! Players pass the phone around, writing consecutive parts of a story while only seeing a small "echo" (the last few words) of what the previous writer contributed.
 
 ---
 
@@ -61,6 +67,16 @@ To build and run this project, you will need:
 ---
 
 ## 🚀 Getting Started & Installation
+
+### 📲 Download
+Get the app on the Google Play Store:
+
+<a href="https://play.google.com/store/apps/details?id=com.LakesCorp.FunCoStory">
+  <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" height="50">
+</a>
+
+### 🛠️ Build from Source
+If you prefer to build the app manually:
 
 1. **Clone the repository:**
    ```bash
