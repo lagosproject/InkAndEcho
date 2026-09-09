@@ -7,14 +7,14 @@ plugins {
 
 android {
     namespace = "com.LakesCorp.FunCoStory"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.LakesCorp.FunCoStory"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 9
-        versionName = "1.3.0"
+        targetSdk = 35
+        versionCode = 10
+        versionName = "1.3.1"
 
         vectorDrawables {
             useSupportLibrary = true

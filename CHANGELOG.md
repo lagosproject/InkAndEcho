@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-09-09
+
+### Changed
+- Target Android 15 by bumping `targetSdk` and `compileSdk` to 35, complying with Google Play API level requirements.
+- Bumped `versionCode` to 10 and `versionName` to 1.3.1.
+
 ## [1.3.0] - 2026-06-03
 
 ### Added
